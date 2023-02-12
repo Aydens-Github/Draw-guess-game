@@ -10,10 +10,12 @@ draw_guess_game_path = fr'{Path(__file__).parents[0]}\draw_guess_game'
 image_path = fr'{draw_guess_game_path}\dog.png'
 
 label = 'dog'
+labels = ('dog', 'cat')
+
 # model = keras.models.load_model(fr'{draw_guess_game_path}\cifar10_trained_model')
 
 # loading fashionmnist dataset
-(train_images, train_labels), (extra_images, extra_labels) = keras.datasets..load_data()
+(train_images, train_labels), (extra_images, extra_labels) = keras.datasets.cifar10.load_data()
 train_images = np.concatenate((train_images, extra_images), axis=0)
 train_labels = np.concatenate((train_labels, extra_labels), axis=0)
 
