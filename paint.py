@@ -1,3 +1,4 @@
+''' Module and runnable paint game where you can draw on a canvas '''
 from random import choice
 from pathlib import Path
 import button 
@@ -9,7 +10,7 @@ import pygame as pg
 pg.init()
 
 WIDTH, HEIGHT = 800, 900 # x, y
-FPS = 60 # Frames Per Second
+FPS = 120 # Frames Per Second
 
 images_path = fr'{Path(__file__).parents[0]}\images'
 font_path = fr'{Path(__file__).parents[0]}\font\HugMeTight.ttf'
@@ -32,26 +33,42 @@ class Paint:
                 'finish': 723
                 }
 
-    def play(self):
+        self.reset()
+
+    def play(self, mouse_state):
         self.colors.draw(0, 800)
         for color, x in self.invisible_buttons.items():
             if button.Button(self.surface, pg.image.load(f'{images_path}\\blank.png'), 2.87).click(x, 824):
-                self.color = self.change_color(color)
+                self.change_color(color)
+
+        pos = pg.mouse.get_pos()
+        if pos[1] < 800:
+            pg.draw.circle(self.surface, self.color, pos, self.size)
+            if pg.mouse.get_pressed()[0]:
+                self.canvas.append((self.color, pos, self.size))
+
+        self.draw_canvas()
 
     def change_color(self, color):
+        self.color = color
         if color == 'erase':
-            # Recursion
-            main(self.word, started=True)
+            self.reset()
         elif color == 'finish':
             self.finish()
 
-        # return new brush color
+    def draw_canvas(self):
+        for i in self.canvas:
+            pg.draw.circle(self.surface, i[0], i[1], i[2])
 
     def finish(self):
         # Take a 800, 800 screenshot of the canvas and pick a file location
         quit()
 
-
+    def reset(self):
+        self.color = 'black'
+        self.size = 10
+        self.canvas = []
+        
 def text_builder(surface, q, size, x, y):
     for mini_q in q.split('||'):
         if len(q.split('||')) > 1:
@@ -63,7 +80,7 @@ def text_builder(surface, q, size, x, y):
         surface.blit(text, textRect)
 
 
-def main(word=None, started=False):
+def main(word=None):
     if not word:
         word = choice(mod.words)
 
@@ -77,20 +94,9 @@ def main(word=None, started=False):
     clock = pg.time.Clock()
     paint = Paint(surface, word)
 
+    started = False
+
     while True:
-        # Setting fps
-        clock.tick(FPS)
-
-        # Resetting screen every tick
-        surface.fill('white')
-
-        if started:
-            paint.play()
-        else:
-            text_builder(surface, q='Your word is:', size=100, x=400, y=150)
-            text_builder(surface, q=word.upper(), size=120, x=400, y=275)
-            text_builder(surface, q='Press anything||to start', size=100, x=400, y=550)
-
         # If user quits then quit
         for event in pg.event.get():
             if event.type==pg.QUIT:
@@ -99,8 +105,21 @@ def main(word=None, started=False):
             if event.type == pg.KEYDOWN:
                 started = True
 
+        # Setting fps
+        clock.tick(FPS)
+
+        # Resetting screen every tick
+        surface.fill('white')
+
+        if started:
+            paint.play(event.type)
+        else:
+            text_builder(surface, q='Your word is:', size=100, x=400, y=150)
+            text_builder(surface, q=word.upper(), size=120, x=400, y=275)
+            text_builder(surface, q='Press anything||to start', size=100, x=400, y=550)
+
         pg.display.update()
 
 
 if __name__ == "__main__":
-    main('Microphone')
+    main()
