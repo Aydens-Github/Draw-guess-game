@@ -35,7 +35,7 @@ class Paint:
 
         self.reset()
 
-    def play(self, mouse_state):
+    def play(self):
         self.colors.draw(0, 800)
         for color, x in self.invisible_buttons.items():
             if button.Button(self.surface, pg.image.load(f'{images_path}\\blank.png'), 2.87).click(x, 824):
@@ -112,7 +112,7 @@ def main(word=None):
         surface.fill('white')
 
         if started:
-            paint.play(event.type)
+            paint.play()
         else:
             text_builder(surface, q='Your word is:', size=100, x=400, y=150)
             text_builder(surface, q=word.upper(), size=120, x=400, y=275)
