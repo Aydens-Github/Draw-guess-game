@@ -7,10 +7,11 @@ import pygame as pg
 
 pg.init()
 
-WIDTH, HEIGHT = 1000, 1000 # x, y
+WIDTH, HEIGHT = 800, 895 # x, y
 FPS = 60 # Frames Per Second
-COLOR = (100, 100, 100) # RGB
+COLOR = (240, 240, 240) # RGB
 BLACK = (0, 0, 0) # RGB
+
 images_path = fr'{Path(__file__).parents[0]}\images'
 # image_path = fr'{images_path}\drawing.png'
 
@@ -21,16 +22,37 @@ class Paint:
     def __init__(self, surface, word):
         self.surface = surface
         self.word = word
+        self.colors = button.Button(surface, pg.image.load(f'{images_path}\colors.png'), 2.87)
+        self.all_buttons = {'red': 823,
+                'blue': 0,
+                'green': 0,
+                'cyan': 0,
+                'pink': 0,
+                'yellow': 0,
+                'white': 0,
+                'black': 0,
+                'erase': 0,
+                'finish': 0}
 
     def play(self):
-        # if finish:
-        #     return True
-        return False
+        for color, y in self.all_buttons.items():
+            if button.Button(self.surface, pg.image.load(f'{images_path}\\blank.png'), 2.87).click(23, y):
+                self.color = self.change_color(color)
 
-    def get_image(self):
-        return 1
+    def change_color(self, color):
+        if color == 'erase':
+            # Recursion
+            main(self.word)
+        elif color == 'finish':
+            self.finish()
 
-        
+        # return new brush color
+
+    def finish(self):
+        # Take a 800, 800 screenshot of the canvas and pick a file location
+        quit()
+
+
 def main(word=None):
     if not word:
         word = choice(mod.words)
@@ -45,8 +67,8 @@ def main(word=None):
     clock = pg.time.Clock()
     paint = Paint(surface, word)
 
-    start_button = button.Button(surface, pg.image.load(f'{images_path}\start.png'), 4  )
-    start = False
+    start = button.Button(surface, pg.image.load(f'{images_path}\start.png'), 4)
+    started = False
     
     font1 = pg.font.Font(font_path, 160, bold=True)
     text = font1.render(word.upper(), True, BLACK)
@@ -70,18 +92,16 @@ def main(word=None):
         # Resetting screen every tick
         surface.fill(COLOR)
 
-        if start or start_button.click(30, 550):
-            start = True
-            if paint.play():
-                break
+        if started or start.click(30, 550):
+            started = True
+            paint.play()    
         else:
             surface.blit(text, textRect)
             surface.blit(text2, textRect2)
 
         pg.display.update()
-        
-    return paint.get_image()
+
 
 
 if __name__ == "__main__":
-    main('Restaurant')
+    main()
