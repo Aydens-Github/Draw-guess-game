@@ -5,14 +5,13 @@ import mod
 import pygame as pg
 
 
+# Initialize pygame
 pg.init()
 
 WIDTH, HEIGHT = 800, 900 # x, y
 FPS = 60 # Frames Per Second
 
 images_path = fr'{Path(__file__).parents[0]}\images'
-# image_path = fr'{images_path}\drawing.png'
-
 font_path = fr'{Path(__file__).parents[0]}\font\HugMeTight.ttf'
 
 
@@ -21,7 +20,7 @@ class Paint:
         self.surface = surface
         self.word = word
         self.colors = button.Button(surface, pg.image.load(f'{images_path}\colors2.png'), 2.9)
-        self.all_buttons = {'red': 19,
+        self.invisible_buttons = {'red': 19,
                 'blue': 97,
                 'green': 175,
                 'cyan': 254,
@@ -35,7 +34,7 @@ class Paint:
 
     def play(self):
         self.colors.draw(0, 800)
-        for color, x in self.all_buttons.items():
+        for color, x in self.invisible_buttons.items():
             if button.Button(self.surface, pg.image.load(f'{images_path}\\blank.png'), 2.87).click(x, 824):
                 self.color = self.change_color(color)
 
@@ -53,6 +52,17 @@ class Paint:
         quit()
 
 
+def text_builder(surface, q, size, x, y):
+    for mini_q in q.split('||'):
+        if len(q.split('||')) > 1:
+            y += size
+        font = pg.font.Font(font_path, size, bold=True)
+        text = font.render(mini_q, True, 'black')
+        textRect = text.get_rect()
+        textRect.center = (x, y)
+        surface.blit(text, textRect)
+
+
 def main(word=None, started=False):
     if not word:
         word = choice(mod.words)
@@ -67,39 +77,30 @@ def main(word=None, started=False):
     clock = pg.time.Clock()
     paint = Paint(surface, word)
 
-    start = button.Button(surface, pg.image.load(f'{images_path}\start.png'), 4)
-    
-    font1 = pg.font.Font(font_path, 160, bold=True)
-    text = font1.render(word.upper(), True, 'black')
-    textRect = text.get_rect()
-    textRect.center = (500, 400)
-
-    font2 = pg.font.Font(font_path, 150, bold=True)
-    text2 = font2.render('Your word is: ', True, 'black')
-    textRect2 = text2.get_rect()
-    textRect2.center = (520, 200)
-
     while True:
-        # If user quits then quit
-        for event in pg.event.get():
-            if event.type==pg.QUIT:
-                exit()
-
         # Setting fps
         clock.tick(FPS)
 
         # Resetting screen every tick
         surface.fill('white')
 
-        if started or start.click(30, 550):
-            started = True
-            paint.play()    
+        if started:
+            paint.play()
         else:
-            surface.blit(text, textRect)
-            surface.blit(text2, textRect2)
+            text_builder(surface, q='Your word is:', size=100, x=400, y=150)
+            text_builder(surface, q=word.upper(), size=120, x=400, y=275)
+            text_builder(surface, q='Press anything||to start', size=100, x=400, y=550)
+
+        # If user quits then quit
+        for event in pg.event.get():
+            if event.type==pg.QUIT:
+                exit()
+
+            if event.type == pg.KEYDOWN:
+                started = True
 
         pg.display.update()
 
 
 if __name__ == "__main__":
-    main()
+    main('Microphone')
