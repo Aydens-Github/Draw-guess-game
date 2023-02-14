@@ -20,7 +20,7 @@ class Paint:
     def __init__(self, surface, word):
         self.surface = surface
         self.word = word
-        self.colors = button.Button(surface, pg.image.load(f'{images_path}\colors2.png'), 2.9)
+        self.colors = button.Button(surface, pg.image.load(f'{images_path}\colors.png'), 2.9)
         self.invisible_buttons = {'red': 19,
                 'blue': 97,
                 'green': 175,
@@ -36,10 +36,7 @@ class Paint:
         self.reset()
 
     def play(self):
-        self.colors.draw(0, 800)
-        for color, x in self.invisible_buttons.items():
-            if button.Button(self.surface, pg.image.load(f'{images_path}\\blank.png'), 2.87).click(x, 824):
-                self.change_color(color)
+        self.draw_canvas()
 
         pos = pg.mouse.get_pos()
         if pos[1] < 800:
@@ -47,7 +44,10 @@ class Paint:
             if pg.mouse.get_pressed()[0]:
                 self.canvas.append((self.color, pos, self.size))
 
-        self.draw_canvas()
+        self.colors.draw(0, 800)
+        for color, x in self.invisible_buttons.items():
+            if button.Button(self.surface, pg.image.load(f'{images_path}\\blank.png'), 2.87).click(x, 824):
+                self.change_color(color)
 
     def change_color(self, color):
         self.color = color
@@ -95,7 +95,8 @@ def main(word=None):
     paint = Paint(surface, word)
 
     started = False
-
+    
+    change_size = None
     while True:
         # If user quits then quit
         for event in pg.event.get():
@@ -104,6 +105,25 @@ def main(word=None):
 
             if event.type == pg.KEYDOWN:
                 started = True
+
+                if event.key == pg.K_UP:
+                    change_size = True
+                elif event.key == pg.K_DOWN:
+                    change_size = False
+            
+            if event.type == pg.KEYUP:
+                change_size = None
+        
+        if change_size == True:
+            paint.size += 3
+        elif change_size == False:
+            paint.size -= 3
+        
+        if paint.size < 1:
+            paint.size = 1
+        elif paint.size > 300:
+            paint.size = 300
+        
 
         # Setting fps
         clock.tick(FPS)
