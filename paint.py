@@ -4,7 +4,8 @@ from pathlib import Path
 import button 
 import mod 
 import pygame as pg
-import cv2
+from cv2 import imread, imwrite, imshow
+
 
 # Initialize pygame
 pg.init()
@@ -13,6 +14,7 @@ WIDTH, HEIGHT = 800, 900 # x, y
 FPS = 1024 # Frames Per Second
 
 images_path = fr'{Path(__file__).parents[0]}\images'
+image_path = fr'{images_path}\canvas.png'
 font_path = fr'{Path(__file__).parents[0]}\font\HugMeTight.ttf'
 
 
@@ -30,6 +32,9 @@ class Paint:
         # Canvas is blank
         self.canvas = []
 
+        # Games flag
+        self.running = True
+
         # Used for the buttons
         self.colors = button.Button(surface, pg.image.load(f'{images_path}\colors.png'), 2.9)
         self.invisible_buttons = {'red': 19,
@@ -43,6 +48,7 @@ class Paint:
                 'erase': 645,
                 'finish': 723
                 }
+
 
     def play(self):
         # Draw canvas
@@ -69,9 +75,8 @@ class Paint:
             # If the menu was clicked
             if button.Button(self.surface, pg.image.load(f'{images_path}\\blank.png'), 2.87).click(x, 824):
                 # Change the color of the cursor and check to see if the user has selected to finish
-                if self.change_color(color):
-                    # If they have return True (a sign to terminate the program)
-                    return True
+                self.change_color(color)
+                    
 
     def change_color(self, color):
         # If the user picked to erase the canvas
@@ -81,14 +86,18 @@ class Paint:
             return None
         # If the user has had enough
         elif color == 'finish':
-            # Return True (a sign to terminate the program)
-            return True
+            # Terminate the program
+            self.running = False
         # If neither statements above have been hit change the color of the cursor to the color the user picked
         else:
             self.color = color
 
-    def get_image(self):
-        return ...
+
+    def save_canvas(self):
+        pg.image.save(self.surface, image_path)
+        canvas = imread(image_path)
+        canvas = canvas[0:800, 0:800]
+        imwrite(image_path, canvas)
         
 
 def text_builder(surface, q, size, x, y):
@@ -125,11 +134,11 @@ def main(word=None):
     change_size = None
 
     # Main game loop
-    while True:
+    while paint.running:
         # If user quits then quit
         for event in pg.event.get():
             if event.type==pg.QUIT:
-                exit()
+                paint.running = False
 
             # User must press any key to start
             if event.type == pg.KEYDOWN:
@@ -166,8 +175,7 @@ def main(word=None):
                 if event.key == pg.K_f:
                     color = 'finish'
                 
-                if paint.change_color(color):
-                    return paint.get_image()
+                paint.change_color(color)
                     
             # If the user is not pressing any keys
             if event.type == pg.KEYUP:
@@ -201,7 +209,7 @@ def main(word=None):
             # paint, if the user has chosen to finish painting
             if paint.play():
                 # return an image of the canvas
-                return paint.get_image()
+                paint.running = False
         else:
             # Draw text to a screen explaining what to do
             text_builder(surface, q='Welcome to Paint', size=90, x=405, y=100)
@@ -211,6 +219,8 @@ def main(word=None):
         
         # Update the display
         pg.display.update()
+
+    paint.save_canvas()
 
 
 if __name__ == "__main__":
